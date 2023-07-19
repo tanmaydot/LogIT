@@ -1,6 +1,6 @@
+/* eslint-disable react/no-unescaped-entities */
 'use client'
 import React, { useState, ChangeEvent } from 'react';
-
 interface Product {
   name: string;
   quantity: number;
@@ -31,11 +31,15 @@ const ProductsList: React.FC<ProductsListProps> = () => {
   };
 
   const handleQuantityChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setQuantity((prevQuantity) => parseInt(event.target.value, 10));
+    const { value } = event.target;
+    const parsedValue = parseInt(value, 10);
+    setQuantity(parsedValue >= 0 ? parsedValue : 0);
   };
 
   const handlePriceChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setPrice((prevPrice) => Math.floor(parseFloat(event.target.value) * 100) / 100);
+    const { value } = event.target;
+    const parsedValue = parseFloat(value);
+    setPrice(parsedValue >= 0 ? Math.floor(parsedValue) : 0);
   };
 
   const addProducts = () => {
@@ -77,7 +81,7 @@ const ProductsList: React.FC<ProductsListProps> = () => {
   return (
     <div className="container mx-auto p-4">
       <div className="mb-4">
-        <label htmlFor="datePicker" className="mr-2 text-gray-700">
+        <label htmlFor="datePicker" className="mr-2 text-green-700">
           Select Date:
         </label>
         <input
@@ -85,17 +89,17 @@ const ProductsList: React.FC<ProductsListProps> = () => {
           type="date"
           value={selectedDate}
           onChange={handleDateChange}
-          className="px-4 py-2 border border-gray-400 rounded focus:outline-none focus:ring focus:ring-blue-200"
+          className="px-4 py-2 border border-green-800 rounded-lg focus:outline-none focus:ring focus:ring-green-400"
         />
       </div>
-      <div className="flex mb-4">
+      <div className="flex items-center mb-4">
         <input
           id="productName"
           type="text"
           placeholder="Product Name"
           value={name}
           onChange={handleNameChange}
-          className="px-4 py-2 mr-2 border border-gray-400 rounded w-1/4 focus:outline-none"
+          className="px-4 py-2 mr-2 border border-green-800 rounded-lg w-1/4 focus:outline-none"
         />
         <input
           id="productQuantity"
@@ -103,69 +107,65 @@ const ProductsList: React.FC<ProductsListProps> = () => {
           placeholder="Product Quantity"
           value={quantity === 0 ? '' : quantity}
           onChange={handleQuantityChange}
-          className="px-4 py-2 mr-2 border border-gray-400 rounded w-1/4 focus:outline-none"
+          className="px-4 py-2 mr-2 border border-green-800 rounded-lg w-1/4 focus:outline-none"
         />
         <input
           id="productPrice"
           type="number"
           step="1"
           placeholder="Product Price"
-          value={price === 0 ? '' : price}
+          value={price === 0 ? '' : price.toString()}
           onChange={handlePriceChange}
-          className="px-4 py-2 mr-2 border border-gray-400 rounded w-1/4 focus:outline-none"
+          className="px-4 py-2 mr-2 border border-green-800 rounded-lg w-1/4 focus:outline-none"
         />
         <button
           onClick={addProducts}
-          className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 focus:outline-none"
+          className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 focus:outline-none"
         >
           Add Product
         </button>
       </div>
       <div className="overflow-x-auto">
-        <table className="table-auto w-full">
+        <table className="table-auto w-full border border-green-800">
           <thead>
-            <tr className="bg-gray-200">
-              <th className="py-2 px-4 border">Date</th>
-              <th className="py-2 px-4 border">Product Name</th>
-              <th className="py-2 px-4 border">Quantity</th>
-              <th className="py-2 px-4 border">Price (₹)</th>
-              <th className="py-2 px-4 border">Total (₹)</th>
+            <tr className="bg-green-400">
+              <th className="py-2 px-4">Date</th>
+              <th className="py-2 px-4">Selected Date's Total (₹)</th>
             </tr>
           </thead>
           <tbody>
-            {Object.entries(productsList).map(([date, products]) => (
-              <tr key={date}>
-                <td className="py-2 px-4 border">{date}</td>
-                <td className="py-2 px-4 border">
-                  <ul className="list-disc pl-4">
-                    {products.map((product, index) => (
-                      <li key={index}>{product.name}</li>
-                    ))}
-                  </ul>
-                </td>
-                <td className="py-2 px-4 border">
-                  <ul className="list-disc pl-4">
-                    {products.map((product, index) => (
-                      <li key={index}>{product.quantity}</li>
-                    ))}
-                  </ul>
-                </td>
-                <td className="py-2 px-4 border">
-                  <ul className="list-disc pl-4">
-                    {products.map((product, index) => (
-                      <li key={index}>{`₹${product.price.toFixed(0)}`}</li>
-                    ))}
-                  </ul>
-                </td>
-                <td className="py-2 px-4 font-bold border">
-                  ₹{getTotalForDate(date).toFixed(0)}
-                </td>
-              </tr>
-            ))}
+            <tr>
+              <td className="py-2 px-4 border">{selectedDate}</td>
+              <td className="py-2 px-4 border">
+                ₹{getTotalForDate(selectedDate).toFixed(0)}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div className="overflow-x-auto mt-4">
+        <table className="table-auto w-full border border-green-800">
+          <thead>
+            <tr className="bg-green-400">
+              <th className="py-2 px-4">Product Name</th>
+              <th className="py-2 px-4">Product Quantity</th>
+              <th className="py-2 px-4">Product Price</th>
+            </tr>
+          </thead>
+          <tbody>
+            {productsList[selectedDate] &&
+              productsList[selectedDate].map((product, index) => (
+                <tr key={index}>
+                  <td className="py-2 px-4 border">{product.name}</td>
+                  <td className="py-2 px-4 border">{product.quantity}</td>
+                  <td className="py-2 px-4 border">₹{product.price.toFixed(0)}</td>
+                </tr>
+              ))}
           </tbody>
         </table>
       </div>
     </div>
   );
 };
+
 export default ProductsList;
