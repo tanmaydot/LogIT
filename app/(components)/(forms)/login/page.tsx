@@ -1,33 +1,32 @@
 'use client'
-
-import { useState, useEffect } from "react"
-import { signIn, useSession } from 'next-auth/react'
-import { useRouter } from "next/navigation"
-
-
+import { useState, useEffect } from "react";
+import { signIn, useSession } from 'next-auth/react';
+import { useRouter } from "next/navigation";
 
 export default function Login() {
-    const session = useSession()
-    const router = useRouter()
-    const [data, setData] = useState({
-            email: '',
-            password: ''
-            })
+  const { data: session } = useSession();
+  const router = useRouter();
+  const [data, setData] = useState({
+    email: '',
+    password: ''
+  });
+  const [error, setError] = useState<string | null>(null);
 
+  useEffect(() => {
+    if (session) {
+      router.push('/home');
+    }
+  }, [session, router]);
 
-            useEffect(() => {
-                if (session?.status === 'authenticated') {
-                   router.push('/home') 
-                }
-            })
-
-            const loginUser = async (e: { preventDefault: () => void }) => {
-                e.preventDefault()
-                signIn('credentials',
-                 {...data, redirect: false
-                })
-            }
-
+  const loginUser = async (e:any) => {
+    e.preventDefault();
+    const result = await signIn('credentials', { ...data, redirect: false });
+    if (result?.error) {
+      setError("Wrong email or password");
+    } else {
+      setError("User does not exist");
+    }
+  };
     return (
       <>
         <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">
@@ -87,6 +86,11 @@ export default function Login() {
                   Sign in
                 </button>
               </div>
+              {error && (
+                <div className="text-center text-red-500">
+                  {error}
+                </div>
+              )}
             </form>
             <p className="mt-10 text-center text-sm text-gray-500">
               Not a member?{' '}

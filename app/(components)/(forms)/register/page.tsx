@@ -1,28 +1,40 @@
 'use client'
-
-import { useRouter } from "next/navigation"
-import { useState } from "react"
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 export default function Register() {
-    const router = useRouter()
-    const [data, setData] = useState({
-         name: '',
-          email: '',
-           password: ''
-         })
+  const router = useRouter();
+  const [data, setData] = useState({
+    name: '',
+    email: '',
+    password: ''
+  });
+  const [error, setError] = useState<string | null>(null);
 
-         const registerUser = async (e: { preventDefault: () => void }) => {
-            const response  = await fetch('/api/register',{
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({data})
-            })
-            const userInfo = await response.json()
-            console.log(userInfo)
-            router.push('/login')
-         }
+  const registerUser = async (e: any) => {
+    e.preventDefault();
+    try {
+      const response = await fetch('/api/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ data })
+      });
+  
+      if (response.ok) {
+        // Registration successful
+        router.push('/login');
+      } else if (response.status === 400) {
+        const { source } = await response.json(); // Parse the error message from the response
+        setError(source); // Set the specific error message from the server
+      } else {
+        setError("Email already exits.");
+      }
+    } catch (error) {
+      setError("An error occurred during registration.");
+    }
+  };
 
     return (
       <>
@@ -88,7 +100,9 @@ export default function Register() {
                   />
                 </div>
               </div>
-  
+              {error && (
+                <div className="mt-2 text-red-600 text-sm">{error}</div>
+              )}
               <div>
                 <button
                   type="submit"
