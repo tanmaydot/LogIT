@@ -22,9 +22,9 @@ model User {
 
 model Product {
   id             String    @id @default(auto()) @map("_id") @db.ObjectId
-  userId         String    @db.ObjectId
+  productId      String?    @db.ObjectId
   productName    String
   productQuantity String?
   productPrice   String?
-  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user           User?      @relation(fields: [productId], references: [id], onDelete: Cascade)
 }

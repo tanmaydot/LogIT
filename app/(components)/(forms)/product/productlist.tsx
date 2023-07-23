@@ -1,7 +1,4 @@
-/* eslint-disable react/no-unescaped-entities */
-'use client'
-import axios from 'axios';
-import React, { useState, ChangeEvent } from 'react';
+import { useState, ChangeEvent, useEffect } from 'react';
 import { FaTrash, FaEdit } from 'react-icons/fa';
 
 interface Product {
@@ -60,20 +57,33 @@ const ProductsList: React.FC<ProductsListProps> = () => {
       alert('Please fill in all fields with valid values.');
       return;
     }
-
+  
     try {
-      const response = await axios.post('/api/products', {
-        productName,
-        productQuantity,
-        productPrice,
+      const response = await fetch('/api/product', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          productName,
+          productQuantity,
+          productPrice: productPrice || 0, // Provide a default value if it's undefined
+        }),
       });
+      console.log(addProducts)
+      if (!response.ok) {
+        throw new Error('Error adding product');
+      }
+  
+      const data = await response.json();
+  
       // Update the products list with the newly created product
       setProductsList((prevProductsList) => {
         const updatedList = {
           ...prevProductsList,
-          [selectedDate]: [...(prevProductsList[selectedDate] || []), response.data],
+          [selectedDate]: [...(prevProductsList[selectedDate] || []), data],
         };
-
+  
         return updatedList;
       });
 
@@ -160,7 +170,7 @@ const ProductsList: React.FC<ProductsListProps> = () => {
         />
         <div className="ml-4 p-2 border bg-green-400 rounded-lg"> 
           <p>Date: {formatDate(selectedDate)}</p>
-          <p>Total: ₹ {getTotalForDate(selectedDate).toFixed(0)}</p>
+          <p>Total: ₹ {getTotalForDate(selectedDate)}</p>
         </div>
       </div>
       <div className="overflow-x-auto m-4">
@@ -179,7 +189,7 @@ const ProductsList: React.FC<ProductsListProps> = () => {
                 <tr key={index}>
                   <td className="py-2 px-4 border">{product.productName}</td>
                   <td className="py-2 px-4 border">{product.productQuantity}</td>
-                  <td className="py-2 px-4 border">₹{product.productPrice.toFixed(0)}</td>
+                  <td className="py-2 px-4 border">₹{product.productPrice}</td>
                   <td className="py-2 px-4 border">
                     {editIndex === index ? (
                       <button
