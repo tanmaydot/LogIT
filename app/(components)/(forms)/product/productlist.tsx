@@ -1,12 +1,13 @@
 /* eslint-disable react/no-unescaped-entities */
 'use client'
+import axios from 'axios';
 import React, { useState, ChangeEvent } from 'react';
 import { FaTrash, FaEdit } from 'react-icons/fa';
 
 interface Product {
-  name: string;
-  quantity: number;
-  price: number;
+  productName: string;
+  productQuantity: number;
+  productPrice: number;
 }
 
 interface ProductList {
@@ -17,9 +18,9 @@ interface ProductsListProps {}
 
 const ProductsList: React.FC<ProductsListProps> = () => {
   const [selectedDate, setSelectedDate] = useState<string>('');
-  const [name, setName] = useState<string>('');
-  const [quantity, setQuantity] = useState<number>(0);
-  const [price, setPrice] = useState<number>(0);
+  const [productName, setProductName] = useState<string>('');
+  const [productQuantity, setProductQuantity] = useState<number>(0);
+  const [productPrice, setProductPrice] = useState<number>(0);
   const [productsList, setProductsList] = useState<ProductList>({});
   const [editIndex, setEditIndex] = useState<number | null>(null);
 
@@ -39,42 +40,50 @@ const ProductsList: React.FC<ProductsListProps> = () => {
 
   const handleNameChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { value } = event.target;
-    setName(value);
+    setProductName(value);
   };
 
   const handleQuantityChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { value } = event.target;
     const parsedValue = parseInt(value, 10);
-    setQuantity(parsedValue >= 0 ? parsedValue : 0);
+    setProductQuantity(parsedValue >= 0 ? parsedValue : 0);
   };
 
   const handlePriceChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { value } = event.target;
     const parsedValue = parseFloat(value);
-    setPrice(parsedValue >= 0 ? Math.floor(parsedValue) : 0);
+    setProductPrice(parsedValue >= 0 ? Math.floor(parsedValue) : 0);
   };
 
-  const addProducts = () => {
-    if (!selectedDate || !name || quantity <= 0 || price <= 0) {
+  const addProducts = async () => {
+    if (!selectedDate || !productName || productQuantity <= 0 || productPrice <= 0) {
       alert('Please fill in all fields with valid values.');
       return;
     }
 
-    setProductsList((prevProductsList) => {
-      const updatedList = {
-        ...prevProductsList,
-        [selectedDate]: [
-          ...(prevProductsList[selectedDate] || []),
-          { name, quantity, price },
-        ],
-      };
+    try {
+      const response = await axios.post('/api/products', {
+        productName,
+        productQuantity,
+        productPrice,
+      });
+      // Update the products list with the newly created product
+      setProductsList((prevProductsList) => {
+        const updatedList = {
+          ...prevProductsList,
+          [selectedDate]: [...(prevProductsList[selectedDate] || []), response.data],
+        };
 
-      return updatedList;
-    });
+        return updatedList;
+      });
 
-    setName('');
-    setQuantity(0);
-    setPrice(0);
+      setProductName('');
+      setProductQuantity(0);
+      setProductPrice(0);
+    } catch (error) {
+      console.error('Error adding product:', error);
+      alert('Error adding product. Please try again later.');
+    }
   };
 
   const handleDeleteProduct = (index: number) => {
@@ -94,9 +103,9 @@ const ProductsList: React.FC<ProductsListProps> = () => {
 
   const handleEditProduct = (index: number) => {
     const productToEdit = productsList[selectedDate][index];
-    setName(productToEdit.name);
-    setQuantity(productToEdit.quantity);
-    setPrice(productToEdit.price);
+    setProductName(productToEdit.productName);
+    setProductQuantity(productToEdit.productQuantity);
+    setProductPrice(productToEdit.productPrice);
     setEditIndex(index);
   };
 
@@ -108,7 +117,7 @@ const ProductsList: React.FC<ProductsListProps> = () => {
         }
 
         const updatedList = [...prevProductsList[selectedDate]];
-        updatedList[editIndex] = { name, quantity, price };
+        updatedList[editIndex] = { productName, productQuantity, productPrice };
 
         return {
           ...prevProductsList,
@@ -116,9 +125,9 @@ const ProductsList: React.FC<ProductsListProps> = () => {
         };
       });
 
-      setName('');
-      setQuantity(0);
-      setPrice(0);
+      setProductName('');
+      setProductQuantity(0);
+      setProductPrice(0);
       setEditIndex(null);
     }
   };
@@ -129,7 +138,7 @@ const ProductsList: React.FC<ProductsListProps> = () => {
     }
 
     const total = productsList[date].reduce(
-      (accumulator, product) => accumulator + product.quantity * product.price,
+      (accumulator, product) => accumulator + product.productQuantity * product.productPrice,
       0
     );
 
@@ -138,23 +147,23 @@ const ProductsList: React.FC<ProductsListProps> = () => {
 
   return (
     <div className="container mx-auto p-4 ">
-    <div className="mb-4 flex items-center">
-      <label htmlFor="datePicker" className="mr-2 text-green-700">
-        Select Date:
-      </label>
-      <input
-        id="datePicker"
-        type="date"
-        value={selectedDate}
-        onChange={handleDateChange}
-        className="p-2 border border-green-800 rounded-lg focus:outline-none focus:ring focus:ring-green-400"
-      />
-      <div className="ml-4 p-2 border bg-green-400 rounded-lg"> 
-        <p>Date: {formatDate(selectedDate)}</p>
-        <p>Total: ₹ {getTotalForDate(selectedDate).toFixed(0)}</p>
+      <div className="mb-4 flex items-center">
+        <label htmlFor="datePicker" className="mr-2 text-green-700">
+          Select Date:
+        </label>
+        <input
+          id="datePicker"
+          type="date"
+          value={selectedDate}
+          onChange={handleDateChange}
+          className="p-2 border border-green-800 rounded-lg focus:outline-none focus:ring focus:ring-green-400"
+        />
+        <div className="ml-4 p-2 border bg-green-400 rounded-lg"> 
+          <p>Date: {formatDate(selectedDate)}</p>
+          <p>Total: ₹ {getTotalForDate(selectedDate).toFixed(0)}</p>
+        </div>
       </div>
-    </div>
-    <div className="overflow-x-auto m-4">
+      <div className="overflow-x-auto m-4">
         <table className="table-auto w-full border border-green-800">
           <thead>
             <tr className="bg-green-400">
@@ -168,9 +177,9 @@ const ProductsList: React.FC<ProductsListProps> = () => {
             {productsList[selectedDate] &&
               productsList[selectedDate].map((product, index) => (
                 <tr key={index}>
-                  <td className="py-2 px-4 border">{product.name}</td>
-                  <td className="py-2 px-4 border">{product.quantity}</td>
-                  <td className="py-2 px-4 border">₹{product.price.toFixed(0)}</td>
+                  <td className="py-2 px-4 border">{product.productName}</td>
+                  <td className="py-2 px-4 border">{product.productQuantity}</td>
+                  <td className="py-2 px-4 border">₹{product.productPrice.toFixed(0)}</td>
                   <td className="py-2 px-4 border">
                     {editIndex === index ? (
                       <button
@@ -204,7 +213,7 @@ const ProductsList: React.FC<ProductsListProps> = () => {
           id="productName"
           type="text"
           placeholder="Product Name"
-          value={name}
+          value={productName}
           onChange={handleNameChange}
           className="px-4 py-2 mr-2 border border-green-800 rounded w-1/6 focus:outline-none"
         />
@@ -212,7 +221,7 @@ const ProductsList: React.FC<ProductsListProps> = () => {
           id="productQuantity"
           type="number"
           placeholder="Product Quantity"
-          value={quantity === 0 ? '' : quantity}
+          value={productQuantity === 0 ? '' : productQuantity}
           onChange={handleQuantityChange}
           className="px-4 py-2 mr-2 border border-green-800 rounded w-1/6 focus:outline-none"
         />
@@ -221,7 +230,7 @@ const ProductsList: React.FC<ProductsListProps> = () => {
           type="number"
           step="1"
           placeholder="Product Price"
-          value={price === 0 ? '' : price.toString()}
+          value={productPrice === 0 ? '' : productPrice.toString()}
           onChange={handlePriceChange}
           className="px-4 py-2 mr-2 border border-green-800 rounded w-1/6 focus:outline-none"
         />

@@ -20,7 +20,7 @@ const Home = () => {
         </div>
       ) : (
         <button className='btn' onClick={() => router.push('/login')}>
-          <p>Please Login in</p>
+          <p>Please Login</p>
         </button>
       )}
     </div>
