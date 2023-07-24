@@ -9,7 +9,7 @@ const Home = () => {
 
   return (
     <div className='m-2'>
-      <h1>UNTITLED</h1>
+      <h1>LogIT</h1>
       {session?.user ? (
         <div>
           <p>Name: {session.user.name}</p>

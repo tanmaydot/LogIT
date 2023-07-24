@@ -1,10 +1,12 @@
-import { useState, ChangeEvent, useEffect } from 'react';
+/* eslint-disable react/no-unescaped-entities */
+'use client'
+import React, { useState, ChangeEvent } from 'react';
 import { FaTrash, FaEdit } from 'react-icons/fa';
 
 interface Product {
-  productName: string;
-  productQuantity: number;
-  productPrice: number;
+  name: string;
+  quantity: number;
+  price: number;
 }
 
 interface ProductList {
@@ -15,9 +17,9 @@ interface ProductsListProps {}
 
 const ProductsList: React.FC<ProductsListProps> = () => {
   const [selectedDate, setSelectedDate] = useState<string>('');
-  const [productName, setProductName] = useState<string>('');
-  const [productQuantity, setProductQuantity] = useState<number>(0);
-  const [productPrice, setProductPrice] = useState<number>(0);
+  const [name, setName] = useState<string>('');
+  const [quantity, setQuantity] = useState<number>(0);
+  const [price, setPrice] = useState<number>(0);
   const [productsList, setProductsList] = useState<ProductList>({});
   const [editIndex, setEditIndex] = useState<number | null>(null);
 
@@ -37,63 +39,42 @@ const ProductsList: React.FC<ProductsListProps> = () => {
 
   const handleNameChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { value } = event.target;
-    setProductName(value);
+    setName(value);
   };
 
   const handleQuantityChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { value } = event.target;
     const parsedValue = parseInt(value, 10);
-    setProductQuantity(parsedValue >= 0 ? parsedValue : 0);
+    setQuantity(parsedValue >= 0 ? parsedValue : 0);
   };
 
   const handlePriceChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { value } = event.target;
     const parsedValue = parseFloat(value);
-    setProductPrice(parsedValue >= 0 ? Math.floor(parsedValue) : 0);
+    setPrice(parsedValue >= 0 ? Math.floor(parsedValue) : 0);
   };
 
-  const addProducts = async () => {
-    if (!selectedDate || !productName || productQuantity <= 0 || productPrice <= 0) {
+  const addProducts = () => {
+    if (!selectedDate || !name || quantity <= 0 || price <= 0) {
       alert('Please fill in all fields with valid values.');
       return;
     }
-  
-    try {
-      const response = await fetch('/api/product', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          productName,
-          productQuantity,
-          productPrice: productPrice || 0, // Provide a default value if it's undefined
-        }),
-      });
-      console.log(addProducts)
-      if (!response.ok) {
-        throw new Error('Error adding product');
-      }
-  
-      const data = await response.json();
-  
-      // Update the products list with the newly created product
-      setProductsList((prevProductsList) => {
-        const updatedList = {
-          ...prevProductsList,
-          [selectedDate]: [...(prevProductsList[selectedDate] || []), data],
-        };
-  
-        return updatedList;
-      });
 
-      setProductName('');
-      setProductQuantity(0);
-      setProductPrice(0);
-    } catch (error) {
-      console.error('Error adding product:', error);
-      alert('Error adding product. Please try again later.');
-    }
+    setProductsList((prevProductsList) => {
+      const updatedList = {
+        ...prevProductsList,
+        [selectedDate]: [
+          ...(prevProductsList[selectedDate] || []),
+          { name, quantity, price },
+        ],
+      };
+
+      return updatedList;
+    });
+
+    setName('');
+    setQuantity(0);
+    setPrice(0);
   };
 
   const handleDeleteProduct = (index: number) => {
@@ -113,9 +94,9 @@ const ProductsList: React.FC<ProductsListProps> = () => {
 
   const handleEditProduct = (index: number) => {
     const productToEdit = productsList[selectedDate][index];
-    setProductName(productToEdit.productName);
-    setProductQuantity(productToEdit.productQuantity);
-    setProductPrice(productToEdit.productPrice);
+    setName(productToEdit.name);
+    setQuantity(productToEdit.quantity);
+    setPrice(productToEdit.price);
     setEditIndex(index);
   };
 
@@ -127,7 +108,7 @@ const ProductsList: React.FC<ProductsListProps> = () => {
         }
 
         const updatedList = [...prevProductsList[selectedDate]];
-        updatedList[editIndex] = { productName, productQuantity, productPrice };
+        updatedList[editIndex] = { name, quantity, price };
 
         return {
           ...prevProductsList,
@@ -135,9 +116,9 @@ const ProductsList: React.FC<ProductsListProps> = () => {
         };
       });
 
-      setProductName('');
-      setProductQuantity(0);
-      setProductPrice(0);
+      setName('');
+      setQuantity(0);
+      setPrice(0);
       setEditIndex(null);
     }
   };
@@ -148,7 +129,7 @@ const ProductsList: React.FC<ProductsListProps> = () => {
     }
 
     const total = productsList[date].reduce(
-      (accumulator, product) => accumulator + product.productQuantity * product.productPrice,
+      (accumulator, product) => accumulator + product.quantity * product.price,
       0
     );
 
@@ -157,23 +138,23 @@ const ProductsList: React.FC<ProductsListProps> = () => {
 
   return (
     <div className="container mx-auto p-4 ">
-      <div className="mb-4 flex items-center">
-        <label htmlFor="datePicker" className="mr-2 text-green-700">
-          Select Date:
-        </label>
-        <input
-          id="datePicker"
-          type="date"
-          value={selectedDate}
-          onChange={handleDateChange}
-          className="p-2 border border-green-800 rounded-lg focus:outline-none focus:ring focus:ring-green-400"
-        />
-        <div className="ml-4 p-2 border bg-green-400 rounded-lg"> 
-          <p>Date: {formatDate(selectedDate)}</p>
-          <p>Total: ₹ {getTotalForDate(selectedDate)}</p>
-        </div>
+    <div className="mb-4 flex items-center">
+      <label htmlFor="datePicker" className="mr-2 text-green-700">
+        Select Date:
+      </label>
+      <input
+        id="datePicker"
+        type="date"
+        value={selectedDate}
+        onChange={handleDateChange}
+        className="p-2 border border-green-800 rounded-lg focus:outline-none focus:ring focus:ring-green-400"
+      />
+      <div className="ml-4 p-2 border bg-green-400 rounded-lg"> 
+        <p>Date: {formatDate(selectedDate)}</p>
+        <p>Total: ₹ {getTotalForDate(selectedDate).toFixed(0)}</p>
       </div>
-      <div className="overflow-x-auto m-4">
+    </div>
+    <div className="overflow-x-auto m-4">
         <table className="table-auto w-full border border-green-800">
           <thead>
             <tr className="bg-green-400">
@@ -187,9 +168,9 @@ const ProductsList: React.FC<ProductsListProps> = () => {
             {productsList[selectedDate] &&
               productsList[selectedDate].map((product, index) => (
                 <tr key={index}>
-                  <td className="py-2 px-4 border">{product.productName}</td>
-                  <td className="py-2 px-4 border">{product.productQuantity}</td>
-                  <td className="py-2 px-4 border">₹{product.productPrice}</td>
+                  <td className="py-2 px-4 border">{product.name}</td>
+                  <td className="py-2 px-4 border">{product.quantity}</td>
+                  <td className="py-2 px-4 border">₹{product.price.toFixed(0)}</td>
                   <td className="py-2 px-4 border">
                     {editIndex === index ? (
                       <button
@@ -223,7 +204,7 @@ const ProductsList: React.FC<ProductsListProps> = () => {
           id="productName"
           type="text"
           placeholder="Product Name"
-          value={productName}
+          value={name}
           onChange={handleNameChange}
           className="px-4 py-2 mr-2 border border-green-800 rounded w-1/6 focus:outline-none"
         />
@@ -231,7 +212,7 @@ const ProductsList: React.FC<ProductsListProps> = () => {
           id="productQuantity"
           type="number"
           placeholder="Product Quantity"
-          value={productQuantity === 0 ? '' : productQuantity}
+          value={quantity === 0 ? '' : quantity}
           onChange={handleQuantityChange}
           className="px-4 py-2 mr-2 border border-green-800 rounded w-1/6 focus:outline-none"
         />
@@ -240,7 +221,7 @@ const ProductsList: React.FC<ProductsListProps> = () => {
           type="number"
           step="1"
           placeholder="Product Price"
-          value={productPrice === 0 ? '' : productPrice.toString()}
+          value={price === 0 ? '' : price.toString()}
           onChange={handlePriceChange}
           className="px-4 py-2 mr-2 border border-green-800 rounded w-1/6 focus:outline-none"
         />

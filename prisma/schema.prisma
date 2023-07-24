@@ -16,15 +16,4 @@ model User {
   hashedPassword String?
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
-
-  products Product[]
-}
-
-model Product {
-  id             String    @id @default(auto()) @map("_id") @db.ObjectId
-  productId      String?    @db.ObjectId
-  productName    String
-  productQuantity String?
-  productPrice   String?
-  user           User?      @relation(fields: [productId], references: [id], onDelete: Cascade)
 }
