@@ -1,11 +1,10 @@
-import { NextAuthOptions } from "next-auth";
-import NextAuth from "next-auth/next";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import CredentialsProvider from "next-auth/providers/credentials";
 import prisma from '@/app/db';
 import bcrypt from 'bcrypt';
+import NextAuth , { AuthOptions } from "next-auth";
 
-export const authOptions: NextAuthOptions = {
+export const authOptions: AuthOptions = {
   adapter: PrismaAdapter(prisma),
   providers: [
     CredentialsProvider({
@@ -53,4 +52,4 @@ export const authOptions: NextAuthOptions = {
 };
 
 const handler = NextAuth(authOptions);
-export default handler;
+export { handler as GET, handler as POST };
