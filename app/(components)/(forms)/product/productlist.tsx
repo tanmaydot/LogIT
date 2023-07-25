@@ -1,5 +1,4 @@
 /* eslint-disable react/no-unescaped-entities */
-'use client'
 import React, { useState, ChangeEvent } from 'react';
 import { FaTrash, FaEdit } from 'react-icons/fa';
 
@@ -136,6 +135,35 @@ const ProductsList: React.FC<ProductsListProps> = () => {
     return Math.floor(total * 100) / 100;
   };
 
+  const handleExport = () => {
+    if (Object.keys(productsList).length === 0) {
+      alert("No products to export.");
+      return;
+    }
+  
+    const csvData = convertToCsv(productsList);
+    const blob = new Blob([csvData], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', 'products_list.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const convertToCsv = (data: ProductList) => {
+    let csv = 'Date,Product Name,Product Quantity,Product Price\n';
+
+    Object.entries(data).forEach(([date, products]) => {
+      products.forEach((product) => {
+        csv += `${date},${product.name},${product.quantity},${product.price}\n`;
+      });
+    });
+
+    return csv;
+  };
+
   return (
     <div className="container mx-auto p-4 ">
     <div className="mb-4 flex items-center">
@@ -153,6 +181,12 @@ const ProductsList: React.FC<ProductsListProps> = () => {
         <p>Date: {formatDate(selectedDate)}</p>
         <p>Total: ₹ {getTotalForDate(selectedDate).toFixed(0)}</p>
       </div>
+        <button
+          onClick={handleExport}
+          className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 focus:outline-none ml-2"
+        >
+          Export
+        </button>
     </div>
     <div className="overflow-x-auto m-4">
         <table className="table-auto w-full border border-green-800">
