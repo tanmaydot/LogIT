@@ -1,6 +1,6 @@
 'use client'
 import { useSession, signOut } from 'next-auth/react';
-import ProductsList from '../(forms)/product/productlist';
+import ProductList from '../(products)/ProductList';
 import { useRouter } from 'next/navigation';
 
 const Home = () => {
@@ -8,20 +8,35 @@ const Home = () => {
   const { data: session } = useSession();
 
   return (
-    <div className='m-2'>
-      <h1>LogIT</h1>
+    <div className='m-4'>
+      <h1 className='text-4xl font-bold mb-4'>LogIT</h1>
       {session?.user ? (
-        <div>
-          <p>Name: {session.user.name}</p>
-          <button onClick={() => signOut()} className='btn'>Sign Out</button>
-          <span>
-            <ProductsList />
-          </span>
+        <div className='space-y-4'>
+          <div className='flex items-center'>
+            <p className='text-lg mr-2'>Name: {session.user.name}</p>
+            <button
+              onClick={() => signOut()}
+              className='btn btn-primary bg-green-500 border-none hover:bg-green-400'>
+              Sign Out
+            </button>
+          </div>
+          <div>
+            <ProductList />
+          </div>
         </div>
       ) : (
-        <button className='btn' onClick={() => router.push('/login')}>
-          <p>Please Login</p>
-        </button>
+        <div className='space-y-4'>
+          <button
+              className='btn btn-primary bg-green-500 border-none hover:bg-green-400 mr-2 rounded-none'
+              onClick={() => router.push('/register')}>
+              <p className='text-lg'>Register</p>
+          </button>
+          <button
+              className='btn btn-primary bg-green-500 border-none hover:bg-green-400 rounded-none'
+              onClick={() => router.push('/login')}>
+              <p className='text-lg'>Login</p>
+            </button>
+        </div>
       )}
     </div>
   );
